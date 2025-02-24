@@ -16,15 +16,62 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
   });
 
   useEffect(() => {
-    // Placeholder for actual calculation logic
-    const dummyResults = {
-      characteristicImpedance: 50.0,
-      propagationConstant: { real: 0, imag: 30 },
-      phaseVelocity: 3e8,
-      wavelength: 0.3,
+    // Calculate the transmission line parameters based on the geometry
+    calculateTxLineParams();
+  }, [params, geometry, updateTxLineParams]);
+
+  const calculateTxLineParams = () => {
+    let characteristicImpedance, propagationConstant, phaseVelocity, wavelength;
+    const c = 3e8; // Speed of light in m/s
+    const mu0 = 4 * Math.PI * 1e-7; // Permeability of free space
+    const epsilon0 = 8.854e-12; // Permittivity of free space
+    const epsilon = params.permittivity * epsilon0;
+
+    // Convert MHz to Hz
+    const f = params.frequency * 1e6;
+    const omega = 2 * Math.PI * f;
+
+    // Calculate parameters based on geometry
+    switch (geometry) {
+      case "coaxial":
+        // Z0 = (60/sqrt(εr)) * ln(b/a)
+        characteristicImpedance =
+          (60 / Math.sqrt(params.permittivity)) *
+          Math.log(params.outerRadius / params.innerRadius);
+        break;
+
+      case "twoWire":
+        // Z0 = (120/sqrt(εr)) * ln(D/d)
+        const ratio = params.wireSpacing / (2 * params.wireRadius);
+        characteristicImpedance =
+          (120 / Math.sqrt(params.permittivity)) * Math.log(ratio);
+        break;
+
+      case "parallelPlate":
+        // Z0 = (η0 * d) / (w * sqrt(εr))
+        // where η0 = 377 Ω (impedance of free space)
+        characteristicImpedance =
+          (377 * params.plateSpacing) /
+          (params.plateWidth * Math.sqrt(params.permittivity));
+        break;
+    }
+
+    // Calculate other parameters
+    phaseVelocity = c / Math.sqrt(params.permittivity);
+    wavelength = phaseVelocity / f;
+    propagationConstant = {
+      real: 0, // Alpha (attenuation constant) - zero for lossless line
+      imag: omega / phaseVelocity, // Beta (phase constant)
     };
-    updateTxLineParams(dummyResults);
-  }, [updateTxLineParams]);
+
+    // Update the transmission line parameters
+    updateTxLineParams({
+      characteristicImpedance,
+      propagationConstant,
+      phaseVelocity,
+      wavelength,
+    });
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

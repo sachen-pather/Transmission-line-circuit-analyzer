@@ -9,6 +9,7 @@ import Calculator from "./components/Calculator";
 import CircuitProperties from "./components/CircuitProperties";
 import Results from "./components/Results";
 import Footer from "./components/Footer";
+import StandingWave from "./components/StandingWave";
 
 const App = () => {
   const [selectedGeometry, setSelectedGeometry] = useState("coaxial");
@@ -57,6 +58,14 @@ const App = () => {
             <Results txLineParams={txLineParams} />
             <LumpedElementModel />
           </div>
+          {circuitProps.reflectionCoefficient && txLineParams.wavelength && (
+            <div className="mt-8">
+              <StandingWave
+                reflectionCoefficient={circuitProps.reflectionCoefficient}
+                wavelength={txLineParams.wavelength}
+              />
+            </div>
+          )}
         </motion.div>
       </main>
       <Footer />

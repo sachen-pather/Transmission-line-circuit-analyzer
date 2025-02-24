@@ -1,20 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 const CircuitProperties = ({ txLineParams, circuitProps, setCircuitProps }) => {
   const [loadType, setLoadType] = useState("complex");
 
+  // Handle input changes for line length
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setCircuitProps({ ...circuitProps, [name]: Number.parseFloat(value) });
+    setCircuitProps({
+      ...circuitProps,
+      [name]: Number.parseFloat(value) || 0,
+    });
   };
 
+  // Handle load type changes
   const handleLoadTypeChange = (type) => {
     setLoadType(type);
     if (type === "short") {
-      setCircuitProps({ ...circuitProps, loadImpedance: { real: 0, imag: 0 } });
+      setCircuitProps({
+        ...circuitProps,
+        loadImpedance: { real: 0, imag: 0 },
+      });
     } else if (type === "open") {
       setCircuitProps({
         ...circuitProps,
@@ -22,6 +30,86 @@ const CircuitProperties = ({ txLineParams, circuitProps, setCircuitProps }) => {
       });
     }
   };
+
+  // Calculate reflection coefficient and VSWR whenever load impedance or characteristic impedance changes
+  useEffect(() => {
+    // Only calculate if we have a valid characteristic impedance
+    if (txLineParams && txLineParams.characteristicImpedance) {
+      const Z0 = txLineParams.characteristicImpedance;
+      const ZL = circuitProps.loadImpedance;
+
+      // Calculate reflection coefficient (handle complex load impedance)
+      let reflectionCoefficient, vswr, waveImpedance;
+
+      try {
+        // For purely real load impedance (simplified calculation)
+        if (ZL.imag === 0) {
+          const gamma = (ZL.real - Z0) / (ZL.real + Z0);
+          const magnitude = Math.abs(gamma);
+          const angle = gamma < 0 ? 180 : 0;
+
+          reflectionCoefficient = { magnitude, angle };
+        }
+        // For complex load impedance
+        else {
+          // Calculate complex reflection coefficient
+          // Γ = (ZL - Z0) / (ZL + Z0)
+          const numerator = {
+            real: ZL.real - Z0,
+            imag: ZL.imag,
+          };
+
+          const denominator = {
+            real: ZL.real + Z0,
+            imag: ZL.imag,
+          };
+
+          // Complex division: (a+bi)/(c+di) = (ac+bd)/(c²+d²) + i(bc-ad)/(c²+d²)
+          const denomSquared =
+            denominator.real * denominator.real +
+            denominator.imag * denominator.imag;
+
+          const gammaReal =
+            (numerator.real * denominator.real +
+              numerator.imag * denominator.imag) /
+            denomSquared;
+
+          const gammaImag =
+            (numerator.imag * denominator.real -
+              numerator.real * denominator.imag) /
+            denomSquared;
+
+          // Calculate magnitude and angle
+          const magnitude = Math.sqrt(
+            gammaReal * gammaReal + gammaImag * gammaImag
+          );
+          const angle = (Math.atan2(gammaImag, gammaReal) * 180) / Math.PI;
+
+          reflectionCoefficient = { magnitude, angle };
+        }
+
+        // Calculate VSWR
+        const magnitude = reflectionCoefficient.magnitude;
+        vswr = (1 + magnitude) / Math.max(1 - magnitude, 0.001); // Avoid division by zero
+
+        // For now, just use the load impedance as the wave impedance at d=0
+        waveImpedance = {
+          real: ZL.real,
+          imag: ZL.imag,
+        };
+
+        // Update the circuit properties
+        setCircuitProps((prev) => ({
+          ...prev,
+          reflectionCoefficient,
+          vswr,
+          waveImpedance,
+        }));
+      } catch (error) {
+        console.error("Error calculating circuit properties:", error);
+      }
+    }
+  }, [txLineParams, circuitProps.loadImpedance, setCircuitProps]);
 
   return (
     <motion.div
@@ -100,7 +188,7 @@ const CircuitProperties = ({ txLineParams, circuitProps, setCircuitProps }) => {
                   ...circuitProps,
                   loadImpedance: {
                     ...circuitProps.loadImpedance,
-                    real: Number.parseFloat(e.target.value),
+                    real: Number.parseFloat(e.target.value) || 0,
                   },
                 })
               }
@@ -115,7 +203,7 @@ const CircuitProperties = ({ txLineParams, circuitProps, setCircuitProps }) => {
                   ...circuitProps,
                   loadImpedance: {
                     ...circuitProps.loadImpedance,
-                    imag: Number.parseFloat(e.target.value),
+                    imag: Number.parseFloat(e.target.value) || 0,
                   },
                 })
               }
