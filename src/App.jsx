@@ -74,20 +74,21 @@ const App = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-4">
             <Results txLineParams={txLineParams} />
             <PropagationAnalysis txLineParams={txLineParams} />
           </div>
 
           {circuitProps.reflectionCoefficient && txLineParams.wavelength && (
-            <div>
+            <div className="mb-8">
               <StandingWave
                 reflectionCoefficient={circuitProps.reflectionCoefficient}
                 wavelength={txLineParams.wavelength}
               />
             </div>
           )}
-          <div className="mb-6">
+
+          <div>
             <LumpedElementModel />
           </div>
         </motion.div>
