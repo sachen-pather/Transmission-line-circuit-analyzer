@@ -347,7 +347,7 @@ const StandingWave = ({ reflectionCoefficient, wavelength }) => {
         {/* Y-axis label */}
         <div className="absolute top-0 bottom-0 left-0 flex items-center -ml-10">
           <div className="transform -rotate-90 text-gray-300 text-sm whitespace-nowrap">
-            Voltage Magnitude |V(d)|
+            - |V(d)| -
           </div>
         </div>
       </div>
