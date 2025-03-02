@@ -74,10 +74,6 @@ const App = () => {
             />
           </div>
 
-          <div className="mb-6">
-            <LumpedElementModel />
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
             <Results txLineParams={txLineParams} />
             <PropagationAnalysis txLineParams={txLineParams} />
@@ -91,6 +87,9 @@ const App = () => {
               />
             </div>
           )}
+          <div className="mb-6">
+            <LumpedElementModel />
+          </div>
         </motion.div>
       </main>
       <Footer />
