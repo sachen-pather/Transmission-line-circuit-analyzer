@@ -8,6 +8,7 @@ import GeometrySelector from "./components/GeometrySelector";
 import Calculator from "./components/Calculator";
 import CircuitProperties from "./components/CircuitProperties";
 import Results from "./components/Results";
+import PropagationAnalysis from "./components/PropagationAnalysis";
 import Footer from "./components/Footer";
 import StandingWave from "./components/StandingWave";
 
@@ -18,6 +19,14 @@ const App = () => {
     propagationConstant: null,
     phaseVelocity: null,
     wavelength: null,
+    frequency: null,
+    conductivity: null,
+    lineParams: {
+      resistance: null,
+      inductance: null,
+      conductance: null,
+      capacitance: null,
+    },
   });
   const [circuitProps, setCircuitProps] = useState({
     lineLength: 0.1,
@@ -26,6 +35,15 @@ const App = () => {
     vswr: null,
     waveImpedance: null,
   });
+
+  const updateTxLineParams = (newParams) => {
+    setTxLineParams({
+      ...txLineParams,
+      ...newParams,
+      frequency: newParams.frequency,
+      conductivity: newParams.conductivity,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
@@ -37,16 +55,17 @@ const App = () => {
           transition={{ duration: 0.5 }}
           className="flex-grow flex flex-col"
         >
-          <div className="mb-8">
+          <div className="mb-6">
             <GeometrySelector
               selectedGeometry={selectedGeometry}
               onGeometryChange={setSelectedGeometry}
             />
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
             <Calculator
               geometry={selectedGeometry}
-              updateTxLineParams={setTxLineParams}
+              updateTxLineParams={updateTxLineParams}
             />
             <CircuitProperties
               txLineParams={txLineParams}
@@ -54,12 +73,18 @@ const App = () => {
               setCircuitProps={setCircuitProps}
             />
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Results txLineParams={txLineParams} />
+
+          <div className="mb-6">
             <LumpedElementModel />
           </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
+            <Results txLineParams={txLineParams} />
+            <PropagationAnalysis txLineParams={txLineParams} />
+          </div>
+
           {circuitProps.reflectionCoefficient && txLineParams.wavelength && (
-            <div className="mt-8">
+            <div>
               <StandingWave
                 reflectionCoefficient={circuitProps.reflectionCoefficient}
                 wavelength={txLineParams.wavelength}
