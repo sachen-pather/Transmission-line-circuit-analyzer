@@ -22,6 +22,24 @@ const LumpedElementModel = () => {
           <line
             x1="50"
             y1="40"
+            x2="150"
+            y2="40"
+            stroke="#60A5FA"
+            strokeWidth="2"
+          />
+
+          <line
+            x1="240"
+            y1="40"
+            x2="250"
+            y2="40"
+            stroke="#60A5FA"
+            strokeWidth="2"
+          />
+
+          <line
+            x1="330"
+            y1="40"
             x2="450"
             y2="40"
             stroke="#60A5FA"
@@ -146,7 +164,7 @@ const LumpedElementModel = () => {
           <line
             x1="310"
             y1="90"
-            x2="390"
+            x2="320"
             y2="90"
             stroke="#34D399"
             strokeWidth="2"
@@ -187,11 +205,18 @@ const LumpedElementModel = () => {
             fill="none"
           />
           <path
-            d="M365 90 L380 90"
+            d="M380 90 L390 90"
             stroke="#34D399"
             strokeWidth="2"
             fill="none"
           />
+          <path
+            d="M350 90 L370 90"
+            stroke="#34D399"
+            strokeWidth="2"
+            fill="none"
+          />
+
           <path
             d="M365 120 L380 120"
             stroke="#34D399"
