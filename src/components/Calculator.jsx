@@ -314,16 +314,16 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
             {/* Outer radius line */}
             <line
               x1="200"
-              y1="30" // Adjusted to fit larger canvas
-              x2="320" // Extended to match larger radius
-              y2="150"
+              y1="150" // Adjusted to fit larger canvas
+              x2="200" // Extended to match larger radius
+              y2="30"
               stroke="#9CA3AF"
               strokeWidth="2"
               strokeDasharray="6" // Larger dash for visibility
             />
             <text
-              x="260" // Repositioned for larger diagram
-              y="90" // Adjusted vertically
+              x="200" // Repositioned for larger diagram
+              y="20" // Adjusted vertically
               textAnchor="middle"
               fontSize="16" // Increased from 12
               fill="#D1D5DB"
