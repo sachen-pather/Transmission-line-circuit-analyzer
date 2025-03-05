@@ -2,6 +2,11 @@
 import { motion } from "framer-motion";
 
 const Results = ({ txLineParams }) => {
+  // Check if txLineParams is valid
+  if (!txLineParams) {
+    return <div>No parameters to display</div>;
+  }
+
   const formatExponential = (value) => {
     if (value === null || value === undefined || isNaN(value)) return "N/A";
 
@@ -31,28 +36,28 @@ const Results = ({ txLineParams }) => {
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="text-gray-400">Resistance (R'):</div>
           <div>
-            {txLineParams?.lineParams?.resistance
+            {txLineParams?.lineParams?.resistance !== undefined
               ? `${formatExponential(txLineParams.lineParams.resistance)} Ω/m`
               : "N/A"}
           </div>
 
           <div className="text-gray-400">Inductance (L'):</div>
           <div>
-            {txLineParams?.lineParams?.inductance
+            {txLineParams?.lineParams?.inductance !== undefined
               ? `${formatExponential(txLineParams.lineParams.inductance)} H/m`
               : "N/A"}
           </div>
 
           <div className="text-gray-400">Conductance (G'):</div>
           <div>
-            {txLineParams?.lineParams?.conductance
+            {txLineParams?.lineParams?.conductance !== undefined
               ? `${formatExponential(txLineParams.lineParams.conductance)} S/m`
               : "N/A"}
           </div>
 
           <div className="text-gray-400">Capacitance (C'):</div>
           <div>
-            {txLineParams?.lineParams?.capacitance
+            {txLineParams?.lineParams?.capacitance !== undefined
               ? `${formatExponential(txLineParams.lineParams.capacitance)} F/m`
               : "N/A"}
           </div>
@@ -64,25 +69,43 @@ const Results = ({ txLineParams }) => {
           Wave Propagation Parameters
         </h3>
         <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="text-gray-400">Characteristic Impedance:</div>
-          <div>
-            {txLineParams.characteristicImpedance?.toFixed(2) || "N/A"} Ω
+          <div className="text-gray-400">
+            Characteristic Impedance (Z<sub>0</sub>):
           </div>
-
-          <div className="text-gray-400">Propagation Constant:</div>
           <div>
-            {txLineParams.propagationConstant
-              ? `${txLineParams.propagationConstant.real.toFixed(
-                  4
-                )} + j${txLineParams.propagationConstant.imag.toFixed(4)} rad/m`
+            {txLineParams.characteristicImpedance !== undefined
+              ? `${formatExponential(txLineParams.characteristicImpedance)} Ω`
               : "N/A"}
           </div>
 
-          <div className="text-gray-400">Phase Velocity:</div>
-          <div>{txLineParams.phaseVelocity?.toExponential(3) || "N/A"} m/s</div>
+          <div className="text-gray-400">Propagation Constant (γ):</div>
+          <div>
+            {txLineParams.propagationConstant &&
+            txLineParams.propagationConstant.real !== undefined &&
+            txLineParams.propagationConstant.imag !== undefined
+              ? `${formatExponential(
+                  txLineParams.propagationConstant.real
+                )} + j${formatExponential(
+                  txLineParams.propagationConstant.imag
+                )} /m`
+              : "N/A"}
+          </div>
 
-          <div className="text-gray-400">Wavelength:</div>
-          <div>{txLineParams.wavelength?.toFixed(4) || "N/A"} m</div>
+          <div className="text-gray-400">
+            Phase Velocity (u<sub>p</sub>):
+          </div>
+          <div>
+            {txLineParams.phaseVelocity !== undefined
+              ? formatExponential(txLineParams.phaseVelocity) + " m/s"
+              : "N/A"}
+          </div>
+
+          <div className="text-gray-400">Wavelength (λ):</div>
+          <div>
+            {txLineParams.wavelength !== undefined
+              ? formatExponential(txLineParams.wavelength) + " m"
+              : "N/A"}
+          </div>
         </div>
       </div>
 
