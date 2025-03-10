@@ -6,6 +6,7 @@ const GeometrySelector = ({ selectedGeometry, onGeometryChange }) => {
     { id: "coaxial", name: "Coaxial" },
     { id: "twoWire", name: "Two-Wire" },
     { id: "parallelPlate", name: "Parallel-Plate" },
+    { id: "microstrip", name: "Microstrip" },
   ];
 
   return (

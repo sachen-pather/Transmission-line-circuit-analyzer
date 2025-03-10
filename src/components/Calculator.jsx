@@ -16,6 +16,8 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
     wireSpacing: 10.0,
     plateWidth: 20.0,
     plateSpacing: 2.0,
+    stripWidth: 1.0, // For microstrip
+    substrateHeight: 0.5, // For microstrip
   });
 
   const [lineParams, setLineParams] = useState({
@@ -33,6 +35,7 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
   const handleCalculate = () => {
     calculateTxLineParams();
   };
+
   const calculateTxLineParams = () => {
     // Convert string params to numbers with validation
     const numericParams = {};
@@ -48,6 +51,8 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
       "wireSpacing",
       "plateWidth",
       "plateSpacing",
+      "stripWidth",
+      "substrateHeight",
     ];
 
     for (const key of Object.keys(params)) {
@@ -101,7 +106,9 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
     const Rs = sigma > 0 ? Math.sqrt((Math.PI * f * mu_c) / sigma) : Infinity;
 
     // Transmission line parameters
-    let R, L, G, C, characteristicImpedance;
+    let R, L, G, C;
+    let characteristicImpedance, propagationConstant, phaseVelocity, wavelength;
+    let effectivePermittivity; // For microstrip
 
     try {
       switch (geometry) {
@@ -117,6 +124,13 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
           C = (2 * Math.PI * epsilon) / logTerm;
           characteristicImpedance =
             (60 / Math.sqrt(numericParams.permittivity)) * logTerm;
+
+          // Calculate propagation parameters
+          const alpha = (R / 2) * Math.sqrt(C / L) + (G / 2) * Math.sqrt(L / C);
+          const beta = omega * Math.sqrt(L * C);
+          propagationConstant = { real: alpha, imag: beta };
+          phaseVelocity = c / Math.sqrt(numericParams.permittivity);
+          wavelength = phaseVelocity / f;
           break;
         }
         case "twoWire": {
@@ -132,6 +146,13 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
           C = (Math.PI * epsilon) / logTerm;
           characteristicImpedance =
             (120 / Math.sqrt(numericParams.permittivity)) * logTerm;
+
+          // Calculate propagation parameters
+          const alpha = (R / 2) * Math.sqrt(C / L) + (G / 2) * Math.sqrt(L / C);
+          const beta = omega * Math.sqrt(L * C);
+          propagationConstant = { real: alpha, imag: beta };
+          phaseVelocity = c / Math.sqrt(numericParams.permittivity);
+          wavelength = phaseVelocity / f;
           break;
         }
         case "parallelPlate": {
@@ -145,6 +166,56 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
           C = (epsilon * w) / h;
           characteristicImpedance =
             (377 * h) / (w * Math.sqrt(numericParams.permittivity));
+
+          // Calculate propagation parameters
+          const alpha = (R / 2) * Math.sqrt(C / L) + (G / 2) * Math.sqrt(L / C);
+          const beta = omega * Math.sqrt(L * C);
+          propagationConstant = { real: alpha, imag: beta };
+          phaseVelocity = c / Math.sqrt(numericParams.permittivity);
+          wavelength = phaseVelocity / f;
+          break;
+        }
+        case "microstrip": {
+          // Calculate effective permittivity
+          const w = numericParams.stripWidth * 1e-3; // Convert mm to m
+          const h = numericParams.substrateHeight * 1e-3; // Convert mm to m
+          const er = numericParams.permittivity;
+
+          const s = w / h; // width-to-thickness ratio
+          const x = Math.pow((er - 0.9) / (er + 3), 0.05);
+          const y =
+            1 +
+            0.02 *
+              Math.log(
+                (Math.pow(s, 4) + 3.7e-4 * s * s) / (Math.pow(s, 4) + 0.43)
+              ) +
+            0.05 * Math.log(1 + 1.7e-4 * Math.pow(s, 3));
+
+          effectivePermittivity =
+            (er + 1) / 2 + ((er - 1) / 2) * Math.pow(1 + 10 / s, -x * y);
+
+          // Calculate characteristic impedance
+          const t = Math.pow(30.67 / s, 0.75);
+          characteristicImpedance =
+            (60 / Math.sqrt(effectivePermittivity)) *
+            Math.log(
+              (6 + (2 * Math.PI - 6) * Math.exp(-t)) / s +
+                Math.sqrt(1 + 4 / Math.pow(s, 2))
+            );
+
+          // Calculate propagation parameters
+          phaseVelocity = c / Math.sqrt(effectivePermittivity);
+          const beta = omega / phaseVelocity;
+          propagationConstant = { real: 0, imag: beta }; // Assuming lossless
+          wavelength = phaseVelocity / f;
+
+          // For microstrip, R' and G' are approximately zero for most practical cases
+          R = 0; // Approximation for ideal conductor
+          G = 0; // Approximation for ideal dielectric
+
+          // Calculate C' and L' using relationships
+          C = Math.sqrt(effectivePermittivity) / (characteristicImpedance * c);
+          L = characteristicImpedance * characteristicImpedance * C;
           break;
         }
         default:
@@ -159,25 +230,33 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
         capacitance: C,
       });
 
-      // Propagation parameters
-      const alpha = (R / 2) * Math.sqrt(C / L) + (G / 2) * Math.sqrt(L / C);
-      const beta = omega * Math.sqrt(L * C);
-      const propagationConstant = { real: alpha, imag: beta };
-      const phaseVelocity = c / Math.sqrt(numericParams.permittivity);
-      const wavelength = phaseVelocity / f;
-
-      updateTxLineParams({
+      // Prepare the parameters to update
+      const paramsToUpdate = {
         characteristicImpedance,
         propagationConstant,
         phaseVelocity,
         wavelength,
+        frequency: f,
+        conductivity: sigma,
         lineParams: {
           resistance: R,
           inductance: L,
           conductance: G,
           capacitance: C,
         },
-      });
+      };
+
+      // Add microstrip-specific parameters if needed
+      if (geometry === "microstrip") {
+        paramsToUpdate.effectivePermittivity = effectivePermittivity;
+        paramsToUpdate.microstripParams = {
+          stripWidth: numericParams.stripWidth,
+          substrateHeight: numericParams.substrateHeight,
+          permittivity: numericParams.permittivity,
+        };
+      }
+
+      updateTxLineParams(paramsToUpdate);
     } catch (error) {
       console.error(`Calculation error: ${error.message}`);
       setLineParams({
@@ -279,6 +358,26 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
             )}
           </>
         );
+      case "microstrip":
+        return (
+          <>
+            {renderInputField(
+              "stripWidth",
+              "Strip Width (mm)",
+              params.stripWidth
+            )}
+            {renderInputField(
+              "substrateHeight",
+              "Substrate Height (mm)",
+              params.substrateHeight
+            )}
+            {renderInputField(
+              "permittivity",
+              "Relative Permittivity (εᵣ)",
+              params.permittivity
+            )}
+          </>
+        );
       default:
         return null;
     }
@@ -290,23 +389,23 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
         return (
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 400 300" // Increased from 300x200 to 400x300
+            viewBox="0 0 400 300"
             className="w-full h-auto"
           >
             {/* Outer circle */}
             <circle
               cx="200"
               cy="150"
-              r="120" // Increased from 80
+              r="120"
               fill="#374151"
               stroke="#9CA3AF"
-              strokeWidth="3" // Slightly thicker stroke
+              strokeWidth="3"
             />
             {/* Inner circle */}
             <circle
               cx="200"
               cy="150"
-              r="50" // Increased from 30
+              r="50"
               fill="#6B7280"
               stroke="#9CA3AF"
               strokeWidth="3"
@@ -314,18 +413,18 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
             {/* Outer radius line */}
             <line
               x1="200"
-              y1="150" // Adjusted to fit larger canvas
-              x2="200" // Extended to match larger radius
+              y1="150"
+              x2="200"
               y2="30"
               stroke="#9CA3AF"
               strokeWidth="2"
-              strokeDasharray="6" // Larger dash for visibility
+              strokeDasharray="6"
             />
             <text
-              x="200" // Repositioned for larger diagram
-              y="20" // Adjusted vertically
+              x="200"
+              y="20"
               textAnchor="middle"
-              fontSize="16" // Increased from 12
+              fontSize="16"
               fill="#D1D5DB"
             >
               outer radius
@@ -334,15 +433,15 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
             <line
               x1="200"
               y1="150"
-              x2="250" // Extended to match larger inner circle
+              x2="250"
               y2="150"
               stroke="#9CA3AF"
               strokeWidth="2"
               strokeDasharray="6"
             />
             <text
-              x="225" // Centered on longer line
-              y="140" // Moved up slightly for clarity
+              x="225"
+              y="140"
               textAnchor="middle"
               fontSize="16"
               fill="#D1D5DB"
@@ -356,21 +455,21 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
         return (
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 400 300" // Increased from 220x200 to 400x300
+            viewBox="0 0 400 300"
             className="w-full h-auto"
           >
             {/* Left wire */}
             <circle
-              cx="120" // Shifted left to use more space
+              cx="120"
               cy="150"
-              r="40" // Increased from 20
+              r="40"
               fill="#6B7280"
               stroke="#9CA3AF"
               strokeWidth="3"
             />
             {/* Right wire */}
             <circle
-              cx="280" // Shifted right for symmetry
+              cx="280"
               cy="150"
               r="40"
               fill="#6B7280"
@@ -388,10 +487,10 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
               strokeDasharray="6"
             />
             <text
-              x="200" // Centered between larger circles
-              y="130" // Moved up for better spacing
+              x="200"
+              y="130"
               textAnchor="middle"
-              fontSize="16" // Increased from 12
+              fontSize="16"
               fill="#D1D5DB"
             >
               wire spacing
@@ -399,7 +498,7 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
             {/* Radius line (left wire) */}
             <line
               x1="120"
-              y1="110" // Adjusted for larger circle
+              y1="110"
               x2="120"
               y2="150"
               stroke="#9CA3AF"
@@ -407,7 +506,7 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
               strokeDasharray="6"
             />
             <text
-              x="90" // Shifted left to avoid overlap
+              x="90"
               y="130"
               textAnchor="middle"
               fontSize="16"
@@ -422,15 +521,15 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
         return (
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 400 300" // Increased from 300x200 to 400x300
+            viewBox="0 0 400 300"
             className="w-full h-auto"
           >
             {/* Top plate */}
             <rect
               x="50"
-              y="80" // Adjusted slightly down
-              width="300" // Increased from 200
-              height="20" // Increased from 10
+              y="80"
+              width="300"
+              height="20"
               fill="#6B7280"
               stroke="#9CA3AF"
               strokeWidth="3"
@@ -438,7 +537,7 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
             {/* Bottom plate */}
             <rect
               x="50"
-              y="180" // Increased spacing from 120
+              y="180"
               width="300"
               height="20"
               fill="#6B7280"
@@ -448,7 +547,7 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
             {/* Spacing line */}
             <line
               x1="40"
-              y1="100" // Adjusted for thicker plate
+              y1="100"
               x2="40"
               y2="180"
               stroke="#9CA3AF"
@@ -457,9 +556,9 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
             />
             <text
               x="25"
-              y="140" // Centered in larger gap
+              y="140"
               textAnchor="middle"
-              fontSize="16" // Increased from 12
+              fontSize="16"
               fill="#D1D5DB"
             >
               spacing
@@ -467,21 +566,98 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
             {/* Width line */}
             <line
               x1="50"
-              y1="60" // Moved up for larger diagram
-              x2="350" // Extended to match wider plate
+              y1="60"
+              x2="350"
               y2="60"
               stroke="#9CA3AF"
               strokeWidth="2"
               strokeDasharray="6"
             />
             <text
-              x="200" // Centered on wider line
-              y="50" // Adjusted up slightly
+              x="200"
+              y="50"
               textAnchor="middle"
               fontSize="16"
               fill="#D1D5DB"
             >
               width
+            </text>
+          </svg>
+        );
+
+      case "microstrip":
+        return (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 400 300"
+            className="w-full h-auto"
+          >
+            {/* Ground plane */}
+            <rect
+              x="50"
+              y="220"
+              width="300"
+              height="10"
+              fill="#6B7280"
+              stroke="#9CA3AF"
+              strokeWidth="2"
+            />
+
+            {/* Dielectric substrate */}
+            <rect
+              x="50"
+              y="170"
+              width="300"
+              height="50"
+              fill="#D1FAE5"
+              fillOpacity="0.6"
+              stroke="#9CA3AF"
+              strokeWidth="2"
+            />
+
+            {/* Microstrip conductor */}
+            <rect
+              x="150"
+              y="160"
+              width="100"
+              height="10"
+              fill="#6B7280"
+              stroke="#9CA3AF"
+              strokeWidth="2"
+            />
+
+            {/* Width label */}
+            <line
+              x1="150"
+              y1="140"
+              x2="250"
+              y2="140"
+              stroke="#EC4899"
+              strokeWidth="1"
+              strokeDasharray="5,5"
+            />
+            <text
+              x="200"
+              y="130"
+              textAnchor="middle"
+              fill="#EC4899"
+              fontSize="14"
+            >
+              w = {params.stripWidth} mm
+            </text>
+
+            {/* Height label */}
+            <line
+              x1="380"
+              y1="170"
+              x2="380"
+              y2="220"
+              stroke="#EC4899"
+              strokeWidth="1"
+              strokeDasharray="5,5"
+            />
+            <text x="370" y="195" textAnchor="end" fill="#EC4899" fontSize="14">
+              h = {params.substrateHeight} mm
             </text>
           </svg>
         );
@@ -509,12 +685,13 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
               params.frequency,
               "e.g., 2000 or 2e3"
             )}
-            {renderInputField(
-              "permittivity",
-              "Relative Permittivity (εᵣ)",
-              params.permittivity,
-              "e.g., 2.6"
-            )}
+            {geometry !== "microstrip" &&
+              renderInputField(
+                "permittivity",
+                "Relative Permittivity (εᵣ)",
+                params.permittivity,
+                "e.g., 2.6"
+              )}
             {renderInputField(
               "permeability",
               "Relative Permeability (μᵣ)",

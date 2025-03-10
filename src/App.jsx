@@ -11,6 +11,8 @@ import Results from "./components/Results";
 import PropagationAnalysis from "./components/PropagationAnalysis";
 import Footer from "./components/Footer";
 import StandingWave from "./components/StandingWave";
+import PropagatingWaveVisualizer from "./components/PropagatingWaveVisualizer";
+import FrequencyResponse from "./components/FrequencyResponse";
 
 const App = () => {
   const [selectedGeometry, setSelectedGeometry] = useState("coaxial");
@@ -21,6 +23,7 @@ const App = () => {
     wavelength: null,
     frequency: null,
     conductivity: null,
+    effectivePermittivity: null, // For microstrip
     lineParams: {
       resistance: null,
       inductance: null,
@@ -36,6 +39,13 @@ const App = () => {
     waveImpedance: null,
   });
 
+  // Store microstrip-specific parameters
+  const [microstripParams, setMicrostripParams] = useState({
+    stripWidth: 1.0,
+    substrateHeight: 0.5,
+    permittivity: 4.4,
+  });
+
   const updateTxLineParams = (newParams) => {
     setTxLineParams({
       ...txLineParams,
@@ -43,6 +53,11 @@ const App = () => {
       frequency: newParams.frequency,
       conductivity: newParams.conductivity,
     });
+
+    // Update microstrip params if provided
+    if (newParams.microstripParams) {
+      setMicrostripParams(newParams.microstripParams);
+    }
   };
 
   return (
@@ -80,15 +95,36 @@ const App = () => {
           </div>
 
           {circuitProps.reflectionCoefficient && txLineParams.wavelength && (
+            <>
+              <div className="mb-8">
+                <StandingWave
+                  reflectionCoefficient={circuitProps.reflectionCoefficient}
+                  wavelength={txLineParams.wavelength}
+                />
+              </div>
+
+              <div className="mb-8">
+                <PropagatingWaveVisualizer
+                  txLineParams={txLineParams}
+                  reflectionCoefficient={circuitProps.reflectionCoefficient}
+                />
+              </div>
+            </>
+          )}
+
+          {txLineParams.characteristicImpedance && (
             <div className="mb-8">
-              <StandingWave
-                reflectionCoefficient={circuitProps.reflectionCoefficient}
-                wavelength={txLineParams.wavelength}
+              <FrequencyResponse
+                txLineParams={txLineParams}
+                geometryType={selectedGeometry}
+                params={
+                  selectedGeometry === "microstrip" ? microstripParams : null
+                }
               />
             </div>
           )}
 
-          <div>
+          <div className="mb-8">
             <LumpedElementModel />
           </div>
         </motion.div>
