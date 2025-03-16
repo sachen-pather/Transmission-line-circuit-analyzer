@@ -51,7 +51,6 @@ const CircuitProperties = ({ txLineParams, circuitProps, setCircuitProps }) => {
   };
 
   // Calculate circuit properties
-  // Calculate circuit properties
   useEffect(() => {
     if (
       txLineParams &&
@@ -111,43 +110,51 @@ const CircuitProperties = ({ txLineParams, circuitProps, setCircuitProps }) => {
 
         if (loadType === "short") {
           // Z(d) = Z₀ * tanh(γd) for short circuit
+          // tanh(γd) = [sinh(αd)cos(βd) + j*cosh(αd)sin(βd)] / [cosh(αd)cos(βd) + j*sinh(αd)sin(βd)]
           const numReal = sinhReal * cosImag;
           const numImag = coshReal * sinImag;
           const denReal = coshReal * cosImag;
           const denImag = sinhReal * sinImag;
           const denMagSq = denReal * denReal + denImag * denImag;
+
+          // Complex division: (a+bi)/(c+di) = [(ac+bd) + i(bc-ad)]/(c²+d²)
           waveImpedance = {
             real:
               denMagSq > 0.00001
-                ? (Z0 * (numReal * denReal + numImag * denImag)) / denMagSq
+                ? Z0 * ((numReal * denReal + numImag * denImag) / denMagSq)
                 : 0,
             imag:
               denMagSq > 0.00001
-                ? (Z0 * (numImag * denReal - numReal * denImag)) / denMagSq
+                ? Z0 * ((numImag * denReal - numReal * denImag) / denMagSq)
                 : 0,
           };
         } else if (loadType === "open") {
           // Z(d) = Z₀ * coth(γd) for open circuit
+          // coth(γd) = [cosh(αd)cos(βd) - j*sinh(αd)sin(βd)] / [sinh(αd)cos(βd) + j*cosh(αd)sin(βd)]
           const numReal = coshReal * cosImag;
           const numImag = -sinhReal * sinImag;
-          const denReal = coshReal * cosImag;
-          const denImag = sinhReal * sinImag;
+          const denReal = sinhReal * cosImag; // FIXED: Was using coshReal * cosImag
+          const denImag = coshReal * sinImag; // FIXED: Was using sinhReal * sinImag
           const denMagSq = denReal * denReal + denImag * denImag;
+
+          // Complex division: (a+bi)/(c+di) = [(ac+bd) + i(bc-ad)]/(c²+d²)
           waveImpedance = {
             real:
               denMagSq > 0.00001
-                ? (Z0 * (numReal * denReal + numImag * denImag)) / denMagSq
+                ? Z0 * ((numReal * denReal + numImag * denImag) / denMagSq)
                 : 1e6, // Large value for open circuit edge case
             imag:
               denMagSq > 0.00001
-                ? (Z0 * (numImag * denReal - numReal * denImag)) / denMagSq
+                ? Z0 * ((numImag * denReal - numReal * denImag) / denMagSq)
                 : 0,
           };
         } else {
           // Complex load: Z(d) = Z₀ * (1 + Γe^(-2γd)) / (1 - Γe^(-2γd))
           const expMag = Math.exp(-2 * alpha * d);
-          const expReal = expMag * Math.cos(-2 * beta * d); // Corrected sign for e^(-j2βd)
+          const expReal = expMag * Math.cos(-2 * beta * d);
           const expImag = expMag * Math.sin(-2 * beta * d);
+
+          // Γe^(-2γd) = (gammaReal + j*gammaImag) * (expReal + j*expImag)
           const gammaExpReal = gammaReal * expReal - gammaImag * expImag;
           const gammaExpImag = gammaReal * expImag + gammaImag * expReal;
 
@@ -158,20 +165,21 @@ const CircuitProperties = ({ txLineParams, circuitProps, setCircuitProps }) => {
           const denMagSquaredWave =
             waveDenReal * waveDenReal + waveDenImag * waveDenImag;
 
+          // Complex division: (a+bi)/(c+di) = [(ac+bd) + i(bc-ad)]/(c²+d²)
           waveImpedance = {
             real:
               denMagSquaredWave > 0.00001
-                ? (Z0 *
-                    (waveNumReal * waveDenReal + waveNumImag * waveDenImag)) /
-                  denMagSquaredWave
+                ? Z0 *
+                  ((waveNumReal * waveDenReal + waveNumImag * waveDenImag) /
+                    denMagSquaredWave)
                 : waveDenReal > 0
                 ? 1e6
                 : -1e6,
             imag:
               denMagSquaredWave > 0.00001
-                ? (Z0 *
-                    (waveNumImag * waveDenReal - waveNumReal * waveDenImag)) /
-                  denMagSquaredWave
+                ? Z0 *
+                  ((waveNumImag * waveDenReal - waveNumReal * waveDenImag) /
+                    denMagSquaredWave)
                 : 0,
           };
         }

@@ -145,17 +145,6 @@ const PropagatingWaveVisualizer = ({ txLineParams, reflectionCoefficient }) => {
     }
 
     // Add labels
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "12px Arial";
-    ctx.textAlign = "left";
-    ctx.fillText("Incident", 10, height / 2 - 40);
-
-    if (gamma > 0.01) {
-      ctx.fillText("Reflected", 10, height / 2 + 50);
-    }
-
-    ctx.textAlign = "right";
-    ctx.fillText("Total", width - 10, height / 2 + 50);
   }, [txLineParams, reflectionCoefficient, animationFrame]);
 
   return (

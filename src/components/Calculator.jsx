@@ -191,23 +191,42 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
               ) +
             0.05 * Math.log(1 + 1.7e-4 * Math.pow(s, 3));
 
-          effectivePermittivity =
+          // Basic effective permittivity (low frequency)
+          let effectivePermittivity =
             (er + 1) / 2 + ((er - 1) / 2) * Math.pow(1 + 10 / s, -x * y);
 
-          // Calculate characteristic impedance
+          // Calculate t parameter for impedance formula
           const t = Math.pow(30.67 / s, 0.75);
-          characteristicImpedance =
+
+          // First calculate a preliminary Z₀ using the low-frequency εeff
+          const prelimZ0 =
             (60 / Math.sqrt(effectivePermittivity)) *
             Math.log(
               (6 + (2 * Math.PI - 6) * Math.exp(-t)) / s +
                 Math.sqrt(1 + 4 / Math.pow(s, 2))
             );
 
-          // Calculate propagation parameters
-          phaseVelocity = c / Math.sqrt(effectivePermittivity);
-          const beta = omega / phaseVelocity;
-          propagationConstant = { real: 0, imag: beta }; // Assuming lossless
-          wavelength = phaseVelocity / f;
+          // Rename G to dispersionFactor to avoid conflict with conductance G
+          const dispersionFactor = 0.6 + 0.009 * prelimZ0;
+          const fp = prelimZ0 / (2 * mu0 * h) / 1e9; // Convert to GHz
+
+          // Apply frequency-dependent correction for high frequencies
+          if (f > 2e9) {
+            // Only apply for frequencies > 2 GHz
+            // Apply the frequency dispersion formula
+            const fGHz = f / 1e9; // Convert Hz to GHz
+            effectivePermittivity =
+              er -
+              (er - effectivePermittivity) /
+                (1 + dispersionFactor * Math.pow(fGHz / fp, 2));
+          }
+
+          characteristicImpedance =
+            (60 / Math.sqrt(effectivePermittivity)) *
+            Math.log(
+              (6 + (2 * Math.PI - 6) * Math.exp(-t)) / s +
+                Math.sqrt(1 + 4 / Math.pow(s, 2))
+            );
 
           // For microstrip, R' and G' are approximately zero for most practical cases
           R = 0; // Approximation for ideal conductor
@@ -216,6 +235,14 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
           // Calculate C' and L' using relationships
           C = Math.sqrt(effectivePermittivity) / (characteristicImpedance * c);
           L = characteristicImpedance * characteristicImpedance * C;
+
+          // ADD THESE CALCULATIONS after L and C
+          // Calculate propagation parameters
+          phaseVelocity = c / Math.sqrt(effectivePermittivity);
+          const beta = omega / phaseVelocity;
+          propagationConstant = { real: 0, imag: beta }; // Assuming lossless
+          wavelength = phaseVelocity / f;
+
           break;
         }
         default:
@@ -253,6 +280,7 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
           stripWidth: numericParams.stripWidth,
           substrateHeight: numericParams.substrateHeight,
           permittivity: numericParams.permittivity,
+          frequencyDispersionApplied: f > 2e9, // Flag to indicate if dispersion was applied
         };
       }
 

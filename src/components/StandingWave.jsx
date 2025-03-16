@@ -133,26 +133,6 @@ const StandingWave = ({ reflectionCoefficient, wavelength }) => {
     const maxAmplitude = 1 + reflectionCoefficient.magnitude;
     const minAmplitude = 1 - reflectionCoefficient.magnitude;
 
-    // Draw tick marks for y-axis
-    [0, 0.5, 1, 1.5, 2].forEach((tick) => {
-      const y = height / 2 - (tick * height) / 4;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(10, y);
-      ctx.stroke();
-      ctx.fillText(tick.toString(), 30, y + 4);
-    });
-
-    // Draw negative tick marks
-    [0.5, 1, 1.5, 2].forEach((tick) => {
-      const y = height / 2 + (tick * height) / 4;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(10, y);
-      ctx.stroke();
-      ctx.fillText((-tick).toString(), 30, y + 4);
-    });
-
     // Draw x-axis tick marks
     for (let i = 0; i < 9; i++) {
       const x = (i * width) / 8;

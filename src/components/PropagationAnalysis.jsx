@@ -85,7 +85,7 @@ const PropagationAnalysis = ({ txLineParams }) => {
           </h3>
           <div className="text-sm text-gray-300">
             <p className="mb-2">
-              For frequency f = {txLineParams.frequency || "N/A"} MHz:
+              For frequency f = {txLineParams.frequency || "N/A"} Hz:
             </p>
             <ul className="list-disc list-inside pl-2">
               <li>

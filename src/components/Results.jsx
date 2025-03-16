@@ -109,6 +109,15 @@ const Results = ({ txLineParams }) => {
         </div>
       </div>
 
+      {/* Add this notification right here, after the grid but before the next div */}
+      {txLineParams.geometryType === "microstrip" &&
+        txLineParams.microstripParams?.frequencyDispersionApplied && (
+          <div className="mt-2 text-yellow-300 text-xs">
+            Note: High-frequency dispersion effects have been applied to the
+            microstrip calculations.
+          </div>
+        )}
+
       <div className="mt-4 text-sm text-gray-400">
         <p className="mb-1">Key Relationships:</p>
         <ul className="list-disc list-inside pl-2">
