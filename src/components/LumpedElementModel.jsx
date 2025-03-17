@@ -349,6 +349,108 @@ const LumpedElementModel = () => {
           </p>
         </div>
       </div>
+
+      {/* Add the explanation section here */}
+      <div className="bg-gray-700 rounded-lg p-4 mt-4 text-gray-200">
+        <h3 className="text-lg font-semibold mb-3 text-blue-400">
+          Understanding the Lumped Element Model
+        </h3>
+
+        <p className="mb-3">
+          The lumped element model represents a differential section of a
+          transmission line as a circuit with discrete components. It's a
+          fundamental concept in transmission line theory that helps us
+          understand how signals propagate along the line.
+        </p>
+
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <h4 className="text-md font-medium mb-2 text-green-400">
+              Primary Line Parameters (per unit length)
+            </h4>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>
+                <strong>R'</strong>: Series resistance (Ω/m) - Represents
+                conductor losses
+              </li>
+              <li>
+                <strong>L'</strong>: Series inductance (H/m) - Represents
+                magnetic field energy storage
+              </li>
+              <li>
+                <strong>G'</strong>: Shunt conductance (S/m) - Represents
+                dielectric losses
+              </li>
+              <li>
+                <strong>C'</strong>: Shunt capacitance (F/m) - Represents
+                electric field energy storage
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-md font-medium mb-2 text-blue-400">
+              Key Equations
+            </h4>
+            <div className="bg-gray-800 p-3 rounded">
+              <p className="mb-2">
+                <strong>Characteristic Impedance:</strong>
+              </p>
+              <p className="mb-1">For lossless line (R'=G'=0):</p>
+              <p className="mb-3 ml-4">Z₀ = √(L'/C')</p>
+              <p className="mb-1">For lossy line:</p>
+              <p className="mb-3 ml-4">Z₀ = √((R'+jωL')/(G'+jωC'))</p>
+
+              <p className="mb-2">
+                <strong>Propagation Constant:</strong>
+              </p>
+              <p className="mb-1">γ = α + jβ = √((R'+jωL')(G'+jωC'))</p>
+              <p className="ml-4 mt-2">where:</p>
+              <p className="ml-6">α = attenuation constant (Np/m)</p>
+              <p className="ml-6">β = phase constant (rad/m)</p>
+            </div>
+          </div>
+        </div>
+
+        <h4 className="text-md font-medium mb-2 text-yellow-400">
+          Transmission Line Equations
+        </h4>
+        <div className="bg-gray-800 p-3 rounded mb-4">
+          <p className="mb-2">
+            The lumped element model leads to the telegrapher's equations:
+          </p>
+          <p className="mb-2">∂V/∂z = -(R'+jωL')I</p>
+          <p className="mb-2">∂I/∂z = -(G'+jωC')V</p>
+          <p className="italic text-gray-400 text-sm">
+            These differential equations describe voltage and current
+            propagation along the line
+          </p>
+        </div>
+
+        <div className="border-t border-gray-600 pt-3">
+          <h4 className="text-md font-medium mb-2 text-purple-400">
+            Special Cases
+          </h4>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <p className="font-medium">Lossless Line (R'=G'=0):</p>
+              <ul className="list-disc pl-5 space-y-1 text-sm">
+                <li>Z₀ = √(L'/C')</li>
+                <li>γ = jβ = jω√(L'C')</li>
+                <li>Wave velocity: v = 1/√(L'C')</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-medium">Low-Loss Approximation:</p>
+              <ul className="list-disc pl-5 space-y-1 text-sm">
+                <li>α ≈ (R'/2)√(C'/L') + (G'/2)√(L'/C')</li>
+                <li>β ≈ ω√(L'C')</li>
+                <li>This approximation is valid when R'≪ωL' and G'≪ωC'</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </motion.div>
   );
 };

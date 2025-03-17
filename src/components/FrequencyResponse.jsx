@@ -350,9 +350,15 @@ const FrequencyResponse = ({ txLineParams, geometryType, params }) => {
         </p>
         {geometryType === "microstrip" && (
           <p className="mt-2">
-            <strong>Note:</strong> Microstrip lines exhibit frequency dispersion
-            at higher frequencies due to the change in effective permittivity.
-            This effect becomes more pronounced above 1 GHz.
+            <strong>Note:</strong> Microstrip lines exhibit significant
+            frequency dispersion at higher frequencies due to their
+            inhomogeneous dielectric environment causing changes in effective
+            permittivity. This effect becomes more pronounced above 1 GHz and
+            directly impacts characteristic impedance. In contrast, conventional
+            transmission lines (coaxial, two-wire, and parallel-plate) maintain
+            consistent impedance across frequency due to their homogeneous
+            dielectric structure and pure TEM propagation mode, making them more
+            predictable for broadband applications.
           </p>
         )}
       </div>
