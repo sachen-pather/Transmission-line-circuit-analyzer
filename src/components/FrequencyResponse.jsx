@@ -348,7 +348,7 @@ const FrequencyResponse = ({ txLineParams, geometryType, params }) => {
             </span>
           )}
         </p>
-        {geometryType === "microstrip" && (
+        {geometryType === "microstrip" ? (
           <p className="mt-2">
             <p className="mt-2">
               <strong>Note:</strong> Microstrip lines exhibit significant
@@ -382,6 +382,46 @@ const FrequencyResponse = ({ txLineParams, geometryType, params }) => {
               makes them more predictable for broadband applications where
               signal integrity across a wide frequency range is critical.
             </p>
+          </p>
+        ) : (
+          <p className="mt-2">
+            <strong>Note:</strong> For{" "}
+            {geometryType === "coaxial"
+              ? "coaxial"
+              : geometryType === "twoWire"
+              ? "two-wire"
+              : "parallel-plate"}{" "}
+            transmission lines, the characteristic impedance remains relatively
+            stable across frequency as they support pure TEM (Transverse
+            Electromagnetic) modes.
+            {geometryType === "coaxial" && (
+              <span>
+                {" "}
+                Coaxial lines maintain consistent impedance due to their
+                enclosed structure and homogeneous dielectric, with impedance
+                primarily determined by the ratio of outer to inner conductor
+                radii. At very high frequencies, minor variations may occur due
+                to skin effect in the conductors.
+              </span>
+            )}
+            {geometryType === "twoWire" && (
+              <span>
+                {" "}
+                Two-wire lines provide stable impedance determined by the wire
+                spacing to radius ratio. Their open structure makes them
+                somewhat more susceptible to external interference compared to
+                enclosed transmission lines.
+              </span>
+            )}
+            {geometryType === "parallelPlate" && (
+              <span>
+                {" "}
+                Parallel-plate lines have impedance primarily determined by the
+                plate spacing to width ratio and dielectric constant. Their
+                simple geometry makes them useful for theoretical analysis and
+                as building blocks for other transmission line structures.
+              </span>
+            )}
           </p>
         )}
       </div>

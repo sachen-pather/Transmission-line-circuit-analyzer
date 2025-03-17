@@ -61,7 +61,7 @@ const PropagatingWaveVisualizer = ({ txLineParams, reflectionCoefficient }) => {
 
     // Draw incident wave
     ctx.beginPath();
-    ctx.strokeStyle = "#10B981"; // Blue for incident wave
+    ctx.strokeStyle = "#10B981"; // Green for incident wave
     ctx.lineWidth = 2;
 
     for (let x = 0; x < width; x++) {
@@ -181,10 +181,43 @@ const PropagatingWaveVisualizer = ({ txLineParams, reflectionCoefficient }) => {
       <div className="text-sm text-gray-400 mt-2">
         <p>
           The visualization shows waves propagating on the transmission line.
-          The blue wave represents the incident wave traveling toward the load,
+          The green wave represents the incident wave traveling toward the load,
           while the pink wave (if visible) shows the reflected wave traveling
-          back toward the source.
+          back toward the source. Their superposition forms the blue total wave.
         </p>
+
+        <div className="mt-4 bg-gray-900 p-3 rounded-lg">
+          <p className="font-semibold mb-2">Wave Equations:</p>
+          <p className="mb-2">Incident Wave: V₁(d,t) = cos(ωt - βd)</p>
+          <p className="mb-2">Reflected Wave: V₂(d,t) = |Γ|cos(ωt + βd - θ)</p>
+          <p>Total Wave: V(d,t) = V₁(d,t) + V₂(d,t)</p>
+        </div>
+
+        <div className="mt-4">
+          <p className="font-semibold mb-1">What This Shows:</p>
+          <ul className="list-disc list-inside pl-2 space-y-1">
+            <li>
+              <span className="text-green-400">Incident wave</span> travels in
+              the +d direction (source to load) with phase velocity v
+              <sub>p</sub> = ω/β
+            </li>
+            <li>
+              <span className="text-pink-400">Reflected wave</span> travels in
+              the -d direction (load to source) with amplitude determined by the
+              reflection coefficient Γ = |Γ|∠θ
+            </li>
+            <li>
+              <span className="text-blue-400">Total wave</span> is the
+              instantaneous sum of both waves, which forms a pattern that moves
+              along the line
+            </li>
+            <li>When |Γ| = 0 (perfect match), only the incident wave exists</li>
+            <li>
+              When |Γ| = 1 (complete reflection), the incident and reflected
+              waves have equal amplitude, forming a standing wave pattern
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   );

@@ -348,10 +348,51 @@ const StandingWave = ({ reflectionCoefficient, wavelength }) => {
       <div className="text-sm text-gray-400 mt-2">
         <p>
           The standing wave pattern shows voltage along the transmission line.
-          The solid blue line represents the actual wave amplitude at a specific
+          The solid blue line represents the instantaneous voltage at a specific
           moment, while the lighter blue envelope shows the maximum amplitude
           range.
         </p>
+
+        <div className="mt-4 bg-gray-900 p-3 rounded-lg">
+          <p className="font-semibold mb-2">Standing Wave Equation:</p>
+          <p className="mb-2">
+            Voltage Magnitude: |V(d)| = |V₀⁺|·[(1 + |Γ|²) + 2|Γ|cos(2βd -
+            θ)]^(1/2)
+          </p>
+          <p className="mb-2">Where:</p>
+          <ul className="list-disc list-inside pl-4 space-y-1">
+            <li>|V₀⁺| is the incident voltage amplitude (normalized to 1)</li>
+            <li>β = 2π/λ is the phase constant</li>
+            <li>d is the distance from the load</li>
+            <li>Γ = |Γ|∠θ is the reflection coefficient</li>
+          </ul>
+        </div>
+
+        <div className="mt-4">
+          <p className="font-semibold mb-1">Key Characteristics:</p>
+          <ul className="list-disc list-inside pl-2 space-y-1">
+            <li>
+              <span className="text-green-400">Voltage maxima</span> occur at
+              positions where 2βd - θ = 2nπ (n = 0, 1, 2...)
+            </li>
+            <li>
+              <span className="text-red-400">Voltage minima</span> occur at
+              positions where 2βd - θ = (2n+1)π
+            </li>
+            <li>The distance between adjacent maxima or minima is λ/2</li>
+            <li>
+              The ratio of maximum to minimum voltage is the VSWR:
+              (1+|Γ|)/(1-|Γ|)
+            </li>
+            <li>
+              For a perfect match (|Γ| = 0), there is no standing wave pattern
+            </li>
+            <li>
+              For a complete reflection (|Γ| = 1), the minima reach zero voltage
+            </li>
+          </ul>
+        </div>
+
         <p className="mt-2">
           <strong>Standing Wave Parameters:</strong>
         </p>
