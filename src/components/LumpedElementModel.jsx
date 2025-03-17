@@ -357,10 +357,11 @@ const LumpedElementModel = () => {
         </h3>
 
         <p className="mb-3">
-          The lumped element model represents a differential section of a
-          transmission line as a circuit with discrete components. It's a
-          fundamental concept in transmission line theory that helps us
-          understand how signals propagate along the line.
+          The lumped element model provides a bridge between circuit theory and
+          electromagnetic theory by representing a differential section of a
+          transmission line as a circuit with discrete components. This
+          fundamental concept helps us understand wave propagation, standing
+          waves, and power transfer along transmission lines.
         </p>
 
         <div className="grid md:grid-cols-2 gap-4 mb-4">
@@ -371,7 +372,7 @@ const LumpedElementModel = () => {
             <ul className="list-disc pl-5 space-y-1">
               <li>
                 <strong>R'</strong>: Series resistance (Ω/m) - Represents
-                conductor losses
+                combined resistance of both conductors
               </li>
               <li>
                 <strong>L'</strong>: Series inductance (H/m) - Represents
@@ -379,13 +380,18 @@ const LumpedElementModel = () => {
               </li>
               <li>
                 <strong>G'</strong>: Shunt conductance (S/m) - Represents
-                dielectric losses
+                current flow between conductors
               </li>
               <li>
                 <strong>C'</strong>: Shunt capacitance (F/m) - Represents
                 electric field energy storage
               </li>
             </ul>
+            <p className="mt-2 text-xs italic">
+              For TEM transmission lines, L'C' = μϵ and G'/C' = σ/ϵ, where μ, ϵ,
+              and σ are the permeability, permittivity, and conductivity of the
+              insulating material.
+            </p>
           </div>
 
           <div>
@@ -394,7 +400,7 @@ const LumpedElementModel = () => {
             </h4>
             <div className="bg-gray-800 p-3 rounded">
               <p className="mb-2">
-                <strong>Characteristic Impedance:</strong>
+                <strong>Characteristic Impedance (Z₀):</strong>
               </p>
               <p className="mb-1">For lossless line (R'=G'=0):</p>
               <p className="mb-3 ml-4">Z₀ = √(L'/C')</p>
@@ -402,7 +408,7 @@ const LumpedElementModel = () => {
               <p className="mb-3 ml-4">Z₀ = √((R'+jωL')/(G'+jωC'))</p>
 
               <p className="mb-2">
-                <strong>Propagation Constant:</strong>
+                <strong>Propagation Constant (γ):</strong>
               </p>
               <p className="mb-1">γ = α + jβ = √((R'+jωL')(G'+jωC'))</p>
               <p className="ml-4 mt-2">where:</p>
@@ -413,7 +419,7 @@ const LumpedElementModel = () => {
         </div>
 
         <h4 className="text-md font-medium mb-2 text-yellow-400">
-          Transmission Line Equations
+          Telegrapher's Equations
         </h4>
         <div className="bg-gray-800 p-3 rounded mb-4">
           <p className="mb-2">
@@ -421,34 +427,93 @@ const LumpedElementModel = () => {
           </p>
           <p className="mb-2">∂V/∂z = -(R'+jωL')I</p>
           <p className="mb-2">∂I/∂z = -(G'+jωC')V</p>
-          <p className="italic text-gray-400 text-sm">
-            These differential equations describe voltage and current
+          <p className="mt-1">These combine to form wave equations:</p>
+          <p className="mb-1">∂²V/∂z² - γ²V = 0</p>
+          <p className="mb-1">∂²I/∂z² - γ²I = 0</p>
+          <p className="italic text-gray-400 text-sm mt-2">
+            These differential equations describe voltage and current wave
             propagation along the line
           </p>
         </div>
 
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <div className="bg-gray-800 p-3 rounded">
+            <h4 className="text-md font-medium mb-2 text-orange-400">
+              General Solution
+            </h4>
+            <p className="mb-2">
+              The wave equations have solutions of the form:
+            </p>
+            <p className="mb-1">V(z) = V₀⁺e⁻ᵞᶻ + V₀⁻eᵞᶻ</p>
+            <p className="mb-1">I(z) = (V₀⁺/Z₀)e⁻ᵞᶻ - (V₀⁻/Z₀)eᵞᶻ</p>
+            <p className="mt-2 text-sm text-gray-400">
+              These represent incident and reflected waves traveling in opposite
+              directions
+            </p>
+          </div>
+
+          <div className="bg-gray-800 p-3 rounded">
+            <h4 className="text-md font-medium mb-2 text-purple-400">
+              Wave Properties
+            </h4>
+            <p className="mb-1">
+              <strong>Phase Velocity:</strong> vₚ = ω/β = 1/√(L'C')
+            </p>
+            <p className="mb-1">
+              <strong>Wavelength:</strong> λ = 2π/β = 2π/(ω√(L'C'))
+            </p>
+            <p className="mb-1">
+              <strong>Reflection Coefficient:</strong> Γ = (ZL-Z₀)/(ZL+Z₀)
+            </p>
+            <p className="mb-1">
+              <strong>Standing Wave Ratio:</strong> S = (1+|Γ|)/(1-|Γ|)
+            </p>
+          </div>
+        </div>
+
         <div className="border-t border-gray-600 pt-3">
-          <h4 className="text-md font-medium mb-2 text-purple-400">
+          <h4 className="text-md font-medium mb-2 text-cyan-400">
             Special Cases
           </h4>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
             <div>
               <p className="font-medium">Lossless Line (R'=G'=0):</p>
               <ul className="list-disc pl-5 space-y-1 text-sm">
-                <li>Z₀ = √(L'/C')</li>
+                <li>Z₀ = √(L'/C') (real)</li>
                 <li>γ = jβ = jω√(L'C')</li>
-                <li>Wave velocity: v = 1/√(L'C')</li>
+                <li>α = 0 (no attenuation)</li>
               </ul>
             </div>
             <div>
-              <p className="font-medium">Low-Loss Approximation:</p>
+              <p className="font-medium">Matched Load (ZL=Z₀):</p>
               <ul className="list-disc pl-5 space-y-1 text-sm">
-                <li>α ≈ (R'/2)√(C'/L') + (G'/2)√(L'/C')</li>
-                <li>β ≈ ω√(L'C')</li>
-                <li>This approximation is valid when R'≪ωL' and G'≪ωC'</li>
+                <li>Γ = 0 (no reflection)</li>
+                <li>No standing waves</li>
+                <li>Maximum power transfer</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-medium">Short/Open Circuit:</p>
+              <ul className="list-disc pl-5 space-y-1 text-sm">
+                <li>|Γ| = 1 (total reflection)</li>
+                <li>S = ∞ (infinite SWR)</li>
+                <li>Input impedance is purely reactive</li>
               </ul>
             </div>
           </div>
+        </div>
+
+        <div className="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded border border-blue-700">
+          <h4 className="text-sm font-semibold text-blue-300">
+            When to Consider Transmission Line Effects
+          </h4>
+          <p className="text-xs mt-1">
+            Transmission line effects become significant when the line length l
+            is comparable to the wavelength λ. When l/λ ≥ 0.01, you should
+            account for transmission line effects including phase delay and
+            reflections. Below this threshold, ordinary circuit theory is
+            usually sufficient.
+          </p>
         </div>
       </div>
     </motion.div>

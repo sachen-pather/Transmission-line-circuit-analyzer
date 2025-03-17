@@ -350,15 +350,38 @@ const FrequencyResponse = ({ txLineParams, geometryType, params }) => {
         </p>
         {geometryType === "microstrip" && (
           <p className="mt-2">
-            <strong>Note:</strong> Microstrip lines exhibit significant
-            frequency dispersion at higher frequencies due to their
-            inhomogeneous dielectric environment causing changes in effective
-            permittivity. This effect becomes more pronounced above 1 GHz and
-            directly impacts characteristic impedance. In contrast, conventional
-            transmission lines (coaxial, two-wire, and parallel-plate) maintain
-            consistent impedance across frequency due to their homogeneous
-            dielectric structure and pure TEM propagation mode, making them more
-            predictable for broadband applications.
+            <p className="mt-2">
+              <strong>Note:</strong> Microstrip lines exhibit significant
+              frequency dispersion at higher frequencies due to their
+              inhomogeneous dielectric environment causing changes in effective
+              permittivity. This effect becomes more pronounced above 1 GHz and
+              directly impacts characteristic impedance. The frequency-dependent
+              effective permittivity can be modeled as:
+            </p>
+            <div className="bg-gray-800 p-3 rounded my-2 text-gray-200 text-sm">
+              <p className="mb-1">
+                εₑff(f) = εᵣ - (εᵣ - εₑff) / (1 + G(f/fₚ)²)
+              </p>
+              <p className="mb-1">where G ≈ 0.6 + 0.009Z₀</p>
+              <p>and fₚ = Z₀/(2μ₀h) GHz</p>
+            </div>
+            <p className="mt-2">
+              This frequency dependence affects the characteristic impedance
+              following:
+            </p>
+            <div className="bg-gray-800 p-3 rounded my-2 text-gray-200 text-sm">
+              <p>
+                Z₀(f) = (60/√εₑff(f)) · ln((6 + (2π - 6)e⁻ᵗ)/s + √(1 + 4/s²))
+              </p>
+            </div>
+            <p className="mt-2">
+              In contrast, conventional transmission lines (coaxial, two-wire,
+              and parallel-plate) maintain consistent impedance across frequency
+              due to their homogeneous dielectric structure and pure TEM
+              propagation mode, with Z₀ remaining independent of frequency. This
+              makes them more predictable for broadband applications where
+              signal integrity across a wide frequency range is critical.
+            </p>
           </p>
         )}
       </div>
