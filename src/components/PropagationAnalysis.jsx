@@ -13,22 +13,42 @@ const PropagationAnalysis = ({ txLineParams }) => {
   useEffect(() => {
     if (!txLineParams || !txLineParams.lineParams) return;
 
-    // Extract parameters
-    const { resistance, inductance, conductance, capacitance } =
-      txLineParams.lineParams;
+    // Extract attenuation constant directly from propagation constant
+    let alpha;
+    if (
+      txLineParams.propagationConstant &&
+      txLineParams.propagationConstant.real !== undefined &&
+      txLineParams.propagationConstant.real !== null
+    ) {
+      alpha = txLineParams.propagationConstant.real;
+    } else {
+      // Fallback calculation only if propagationConstant.real is not available
+      const { resistance, inductance, conductance, capacitance } =
+        txLineParams.lineParams;
+      const Z0 = txLineParams.characteristicImpedance;
+      alpha = Z0 > 0 ? resistance / (2 * Z0) + (conductance * Z0) / 2 : 0;
+    }
 
-    if (!resistance || !inductance || !conductance || !capacitance) return;
-
-    // Calculate parameters for lossy line using low-loss approximation
-    // Alpha = (R'/2Z₀) + (G'Z₀/2)
-    const Z0 = txLineParams.characteristicImpedance;
-    const alpha = resistance / (2 * Z0) + (conductance * Z0) / 2;
-
-    // Beta from the phase constant
-    const beta = txLineParams.propagationConstant.imag;
+    // Extract phase constant directly from propagation constant
+    let beta;
+    if (
+      txLineParams.propagationConstant &&
+      txLineParams.propagationConstant.imag !== undefined &&
+      txLineParams.propagationConstant.imag !== null
+    ) {
+      beta = txLineParams.propagationConstant.imag;
+    } else {
+      // Fallback calculation
+      const { inductance, capacitance } = txLineParams.lineParams;
+      const omega = 2 * Math.PI * txLineParams.frequency;
+      beta =
+        inductance && capacitance
+          ? omega * Math.sqrt(inductance * capacitance)
+          : null;
+    }
 
     // Calculate attenuation in dB/m
-    const attenuationDb = 8.686 * alpha; // 8.686 = 20*log10(e)
+    const attenuationDb = alpha !== null ? 8.686 * alpha : null; // 8.686 = 20*log10(e)
 
     setLossyParams({
       alpha,
@@ -36,10 +56,6 @@ const PropagationAnalysis = ({ txLineParams }) => {
       attenuationDb,
     });
   }, [txLineParams]);
-
-  if (!txLineParams || !txLineParams.lineParams) {
-    return null;
-  }
 
   return (
     <motion.div
@@ -58,21 +74,21 @@ const PropagationAnalysis = ({ txLineParams }) => {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="text-gray-400">Attenuation Constant (α):</div>
             <div>
-              {lossyParams.alpha
+              {lossyParams.alpha !== null
                 ? `${lossyParams.alpha.toExponential(4)} Np/m`
                 : "N/A"}
             </div>
 
             <div className="text-gray-400">Phase Constant (β):</div>
             <div>
-              {lossyParams.beta
+              {lossyParams.beta !== null
                 ? `${lossyParams.beta.toFixed(4)} rad/m`
                 : "N/A"}
             </div>
 
             <div className="text-gray-400">Attenuation:</div>
             <div>
-              {lossyParams.attenuationDb
+              {lossyParams.attenuationDb !== null
                 ? `${lossyParams.attenuationDb.toFixed(4)} dB/m`
                 : "N/A"}
             </div>
@@ -85,17 +101,21 @@ const PropagationAnalysis = ({ txLineParams }) => {
           </h3>
           <div className="text-sm text-gray-300">
             <p className="mb-2">
-              For frequency f = {txLineParams.frequency || "N/A"} Hz:
+              For frequency f ={" "}
+              {txLineParams.frequency
+                ? (txLineParams.frequency / 1e6).toFixed(2) + " MHz"
+                : "N/A"}
+              :
             </p>
             <ul className="list-disc list-inside pl-2">
               <li>
                 Skin depth:{" "}
-                {txLineParams.lineParams
+                {txLineParams.conductivity && txLineParams.frequency
                   ? `${(
                       1 /
                       Math.sqrt(
                         Math.PI *
-                          (txLineParams.frequency * 1e6) *
+                          txLineParams.frequency *
                           4e-7 *
                           Math.PI *
                           txLineParams.conductivity

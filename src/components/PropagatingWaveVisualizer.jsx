@@ -61,7 +61,7 @@ const PropagatingWaveVisualizer = ({ txLineParams, reflectionCoefficient }) => {
 
     // Draw incident wave
     ctx.beginPath();
-    ctx.strokeStyle = "#3B82F6"; // Blue for incident wave
+    ctx.strokeStyle = "#10B981"; // Blue for incident wave
     ctx.lineWidth = 2;
 
     for (let x = 0; x < width; x++) {
@@ -104,7 +104,7 @@ const PropagatingWaveVisualizer = ({ txLineParams, reflectionCoefficient }) => {
 
     // Draw resulting wave (sum of incident and reflected)
     ctx.beginPath();
-    ctx.strokeStyle = "#10B981"; // Green for total wave
+    ctx.strokeStyle = "#3B82F6"; // Blue for total wave
     ctx.lineWidth = 2;
 
     for (let x = 0; x < width; x++) {
@@ -128,7 +128,7 @@ const PropagatingWaveVisualizer = ({ txLineParams, reflectionCoefficient }) => {
     // Add direction arrows
     // Incident wave arrow
     ctx.beginPath();
-    ctx.fillStyle = "#3B82F6";
+    ctx.fillStyle = "#10B981";
     ctx.moveTo(width - 20, height / 2 - 30);
     ctx.lineTo(width - 10, height / 2 - 25);
     ctx.lineTo(width - 20, height / 2 - 20);
@@ -166,7 +166,7 @@ const PropagatingWaveVisualizer = ({ txLineParams, reflectionCoefficient }) => {
       />
       <div className="mt-4 flex flex-wrap gap-4">
         <div className="flex items-center">
-          <div className="w-4 h-4 bg-blue-500 rounded-full mr-2"></div>
+          <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
           <span className="text-sm text-gray-300">Incident Wave</span>
         </div>
         <div className="flex items-center">
@@ -174,7 +174,7 @@ const PropagatingWaveVisualizer = ({ txLineParams, reflectionCoefficient }) => {
           <span className="text-sm text-gray-300">Reflected Wave</span>
         </div>
         <div className="flex items-center">
-          <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+          <div className="w-4 h-4 bg-blue-500 rounded-full mr-2"></div>
           <span className="text-sm text-gray-300">Total Wave</span>
         </div>
       </div>
