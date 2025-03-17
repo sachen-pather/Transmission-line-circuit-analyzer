@@ -3,8 +3,14 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-const Calculator = ({ geometry, updateTxLineParams }) => {
-  const [params, setParams] = useState({
+const Calculator = ({
+  geometry,
+  updateTxLineParams,
+  calculatorInputs,
+  updateCalculatorInputs,
+}) => {
+  {
+    /*const [params, setParams] = useState({
     frequency: 1000,
     permittivity: 1.0,
     permeability: 1.0,
@@ -18,8 +24,9 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
     plateSpacing: 2.0,
     stripWidth: 1.0, // For microstrip
     substrateHeight: 0.5, // For microstrip
-  });
-
+  });*/
+  }
+  const params = calculatorInputs;
   const [lineParams, setLineParams] = useState({
     resistance: null, // R'
     inductance: null, // L'
@@ -314,8 +321,8 @@ const Calculator = ({ geometry, updateTxLineParams }) => {
     // Normalize comma to decimal point for locale compatibility
     const normalizedValue = value.replace(",", ".");
 
-    // Store as string, even for empty or partial inputs
-    setParams({ ...params, [name]: normalizedValue });
+    // Use the updateCalculatorInputs function from props
+    updateCalculatorInputs({ [name]: normalizedValue });
   };
 
   const renderInputField = (name, label, value, placeholder = null) => (
